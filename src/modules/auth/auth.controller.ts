@@ -1,7 +1,6 @@
 import AuthService from "./auth.service";
 
 export default class AuthController {
-    constructor() {}
 
     static async signUp(req: any, res: any) {
         try {

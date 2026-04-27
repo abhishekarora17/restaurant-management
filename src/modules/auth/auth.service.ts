@@ -1,6 +1,5 @@
-import bcrypt from "bcryptjs";
 import { comparePassword, hashPassword } from "../../utils/hash";
-import { generateToken } from "../../utils/jwt";
+import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
 import { User } from "../user/user.model";
 import { verifyGoogleToken } from "./strategies/google.strategies";
 
@@ -21,9 +20,11 @@ export default class AuthService {
             return {
                 message: "User registered successfully",
                 user: user,
-                token: generateToken(user)
+                accessToken: generateAccessToken(user),                
+                refreshToken: generateRefreshToken(user)
             };
         } catch (error) {
+            console.error("Sign up error:", error);
             throw new Error("Error occurred while signing up");
         }
     }
@@ -45,9 +46,11 @@ export default class AuthService {
 
             return {
                 user: user,
-                token: generateToken(user)
+                accessToken: generateAccessToken(user),
+                refreshToken: generateRefreshToken(user)
             };
         } catch (error) {
+            console.error("Sign in error:", error);
             throw new Error("Error occurred while signing in");
         }
     }
@@ -60,18 +63,18 @@ export default class AuthService {
             }
             const { email, name } = payload;
             let user = await User.findOne({ email, provider: 'google' });
-            if (!user) {
-                user = await User.create({
-                    email,
-                    name,
-                    provider: 'google'
-                });
-            }
+            user ??= await User.create({
+                email,
+                name,
+                provider: 'google'
+            });
             return {
                 user: user,
-                token: generateToken(user)
+                accessToken: generateAccessToken(user),
+                refreshToken: generateRefreshToken(user)
             };
         } catch (error) {
+            console.error("Google sign in error:", error);
             throw new Error("Error occurred while signing in with Google");
         }
     }

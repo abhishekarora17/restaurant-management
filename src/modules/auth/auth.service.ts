@@ -1,10 +1,10 @@
 import { comparePassword, hashPassword } from "../../utils/hash";
-import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../../utils/jwt";
 import { User } from "../user/user.model";
 import { verifyGoogleToken } from "./strategies/google.strategies";
 
 export default class AuthService {
-    static async signUp(req: any) {
+    static async signUp(req: any, res: any) {
 
         try {
             const { name, email, password } = req;
@@ -17,20 +17,29 @@ export default class AuthService {
                 provider: 'local',
             });
 
-            return {
+            const accessToken = generateAccessToken(user);
+            const refreshToken = generateRefreshToken(user);
+
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'strict'
+            });
+
+            res.json({
                 message: "User registered successfully",
                 user: user,
-                accessToken: generateAccessToken(user),                
-                refreshToken: generateRefreshToken(user)
-            };
+                accessToken: accessToken
+            });
         } catch (error) {
             console.error("Sign up error:", error);
             throw new Error("Error occurred while signing up");
         }
     }
 
-    static async signIn(email: string, password: string) {
+    static async signIn(req:any, res:any) {
         try {
+            const { email, password } = req.body;
             const user = await User.findOne({ email, provider: 'local' });
             if (!user) {
                 return null;
@@ -44,10 +53,18 @@ export default class AuthService {
                 return null;
             }
 
+            const accessToken = generateAccessToken(user);
+            const refreshToken = generateRefreshToken(user);
+
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'strict'
+            });
+
             return {
                 user: user,
-                accessToken: generateAccessToken(user),
-                refreshToken: generateRefreshToken(user)
+                accessToken: accessToken
             };
         } catch (error) {
             console.error("Sign in error:", error);
@@ -76,6 +93,26 @@ export default class AuthService {
         } catch (error) {
             console.error("Google sign in error:", error);
             throw new Error("Error occurred while signing in with Google");
+        }
+    }
+
+    static async refreshToken(oldRefreshToken: string) {
+        try {
+            const payload: any = verifyRefreshToken(oldRefreshToken);
+            if (!payload) {
+                return null;
+            }
+            const user = await User.findById(payload.id);
+            if (!user) {
+                return null;
+            }
+            return {
+                accessToken: generateAccessToken(user),
+                refreshToken: generateRefreshToken(user)
+            };
+        } catch (error) {
+            console.error("Refresh token error:", error);
+            throw new Error("Error occurred while refreshing token");
         }
     }
 }

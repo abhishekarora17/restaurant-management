@@ -9,6 +9,8 @@ export interface IUser {
     avatar?: string;
     provider: 'local' | 'google';
     role: 'admin' | 'user';
+    accessToken?: string;
+    refreshToken?: string;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -26,7 +28,9 @@ const UserSchema = new Schema<IUser>({
         type: String,
         enum: ['admin','user'],
         default: 'user'
-    }
+    },
+    accessToken: String,
+    refreshToken: String
 }, {
     timestamps: true
 });

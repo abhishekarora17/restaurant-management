@@ -17,10 +17,11 @@ export default class AuthService {
                 provider: 'local',
             });
 
-            const accessToken = generateAccessToken(user);
-            const refreshToken = generateRefreshToken(user);
+            user.accessToken = generateAccessToken(user);
+            user.refreshToken = generateRefreshToken(user);
+            user.save();
 
-            res.cookie('refreshToken', refreshToken, {
+            res.cookie('refreshToken', user.refreshToken, {
                 httpOnly: true,
                 secure: false,
                 sameSite: 'strict'
@@ -28,8 +29,7 @@ export default class AuthService {
 
             res.json({
                 message: "User registered successfully",
-                user: user,
-                accessToken: accessToken
+                user: user
             });
         } catch (error) {
             console.error("Sign up error:", error);
@@ -53,18 +53,18 @@ export default class AuthService {
                 return null;
             }
 
-            const accessToken = generateAccessToken(user);
-            const refreshToken = generateRefreshToken(user);
+            user.accessToken = generateAccessToken(user);
+            user.refreshToken = generateRefreshToken(user);
+            user.save();
 
-            res.cookie('refreshToken', refreshToken, {
+            res.cookie('refreshToken', user.refreshToken, {
                 httpOnly: true,
                 secure: false,
                 sameSite: 'strict'
             });
 
             return {
-                user: user,
-                accessToken: accessToken
+                user: user
             };
         } catch (error) {
             console.error("Sign in error:", error);
@@ -85,10 +85,13 @@ export default class AuthService {
                 name,
                 provider: 'google'
             });
+
+            user.accessToken = generateAccessToken(user);
+            user.refreshToken = generateRefreshToken(user);
+            user.save();
+
             return {
-                user: user,
-                accessToken: generateAccessToken(user),
-                refreshToken: generateRefreshToken(user)
+                user: user
             };
         } catch (error) {
             console.error("Google sign in error:", error);

@@ -50,8 +50,7 @@ const options: Options = {
   },
 
   apis: [
-    './src/routes/*.ts',
-    './src/modules/**/*.ts'
+    './src/docs/*.ts'
   ],
 };
 

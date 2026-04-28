@@ -50,7 +50,7 @@ const options: Options = {
   },
 
   apis: [
-    './src/routes/*.ts',   // adjust based on your structure
+    './src/routes/*.ts',
     './src/modules/**/*.ts'
   ],
 };

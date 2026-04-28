@@ -1,6 +1,6 @@
 // create auth routes
 import { Router } from "express";
-import AuthController from "./auth.controller";
+import AuthController from "../modules/auth/auth.controller";
 const authRoutes = Router();
 
 /**
@@ -30,7 +30,7 @@ authRoutes.post("/signup", AuthController.signUp);
 
 /**
  * @swagger
- * /api/auth/login:
+ * /api/auth/signin:
  *   post:
  *     summary: Login user
  *     tags: [Auth]
@@ -50,7 +50,6 @@ authRoutes.post("/signup", AuthController.signUp);
  *         description: Login successful
  */
 authRoutes.post("/signin", AuthController.signIn);
-
 
 /**
  * @swagger

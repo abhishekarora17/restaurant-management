@@ -4,22 +4,22 @@ const upload = require('../../config/multer');
 export default class MenuService {
     static async createMenu(menuData : any, file : any) {
         try {
-            if (!file) {
-                throw new Error("No file uploaded");
-            }
+            let imageUrl = '';
+            if(file) {
 
-            if (!file.mimetype.startsWith('image/')) {
-                throw new Error("Invalid file type. Only images are allowed");
+                if (!file.mimetype.startsWith('image/')) {
+                    throw new Error("Invalid file type. Only images are allowed");
+                }
+    
+                if (file.size > 1024 * 1024 * 5) {
+                    throw new Error("File size exceeds 5MB");
+                }
+    
+                imageUrl = await upload.single('file').single('file')(file, async (err : any) => {
+                    if (err) throw err;
+                    return `${process.env.APP_URL}/uploads/${file.filename}`;
+                });
             }
-
-            if (file.size > 1024 * 1024 * 5) {
-                throw new Error("File size exceeds 5MB");
-            }
-
-            const imageUrl = await upload.single('file').single('file')(file, async (err : any) => {
-                if (err) throw err;
-                return `${process.env.APP_URL}/uploads/${file.filename}`;
-            });
 
             const newMenuData = {
                 name: menuData.name,
@@ -69,14 +69,31 @@ export default class MenuService {
         }
     }
 
-    static async updateMenu(id: string, menuData: any) {
+    static async updateMenu(id: string, menuData: any, file: any) {
         try {
             const menu = await Menu.findByIdAndUpdate(id, menuData, { new: true });
             if (!menu) {
                 throw new Error("Menu not found");
-            } else {
-                return menu;
             }
+
+            if (file) {
+                if (!file.mimetype.startsWith('image/')) {
+                    throw new Error("Invalid file type. Only images are allowed");
+                }
+
+                if (file.size > 1024 * 1024 * 5) {
+                    throw new Error("File size exceeds 5MB");
+                }
+
+                const imageUrl = await upload.single('file').single('file')(file, async (err : any) => {
+                    if (err) throw err;
+                    return `${process.env.APP_URL}/uploads/${file.filename}`;
+                });
+
+                menu.imageUrl = imageUrl;
+                await menu.save();
+            }
+            return menu;
         } catch (error) {
             console.error("Error updating menu:", error);
             throw new Error("Error occurred while updating menu");
@@ -85,7 +102,7 @@ export default class MenuService {
 
     static async deleteMenu(id: string) {
         try {
-            const menu = await Menu.findByIdAndUpdate(id);
+            const menu = await Menu.findByIdAndDelete(id);
             if (!menu) {
                 throw new Error("Menu not found");
             } else {

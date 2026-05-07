@@ -33,6 +33,16 @@ export default class MenuController {
         }
     }
 
+    static async getMenusByCategory(req : any, res : any) {
+        try {
+            const data = await MenuService.getMenusByCategory(req.params.categoryId);
+            res.json(data);
+        } catch (error : any) {
+            console.error("Error fetching menus by category:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
     static async updateMenu(req : any, res : any) {
         try {
             const data = await MenuService.updateMenu(req.params.id, req.body, req.file);

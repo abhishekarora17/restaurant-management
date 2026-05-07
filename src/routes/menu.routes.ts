@@ -5,6 +5,7 @@ const menuRoutes = express.Router();
 
 menuRoutes.post('/menu', upload.single('image'), MenuController.createMenu);
 menuRoutes.get('/menu', MenuController.getAllMenus);
+menuRoutes.get('/menu/category/:categoryId', MenuController.getMenusByCategory);
 menuRoutes.get('/menu/:id', MenuController.getMenuById);
 menuRoutes.put('/menu/:id', upload.single('image'), MenuController.updateMenu);
 menuRoutes.delete('/menu/:id', MenuController.deleteMenu);
